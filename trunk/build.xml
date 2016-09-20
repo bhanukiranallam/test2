@@ -1,0 +1,127 @@
+<project name="Web Application"  default="sonar" basedir=".">
+
+	<property file="${user.home}/build.properties"/>
+    <property file="build.properties"/>  
+	 <path id="classpath">
+        <fileset dir="web/WEB-INF/lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+   
+   <!--<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"/>
+   <target name="findbugs" depends="package">
+      <property name="findbugs.home" value="C:\softwares\findbugs-1.3.9" />
+      <mkdir dir="${basedir}/build/test/results"/>
+      <findbugs home="${findbugs.home}"
+              output="xml"
+              outputFile="bcel-fb.xml" >-->
+      <!--<auxClasspath path="${findbugs.home}/lib/Regex.jar" />-->
+      <!--<sourcePath path="${basedir}/src/" />
+      <class location="${findbugs.home}/lib/bcel.jar" />
+    </findbugs>
+   </target>-->
+<!--<target name="pmd" depends="package">
+ <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask"/>
+ <pmd rulesetfiles="rulesets/design.xml">
+          <formatter type="net.sourceforge.pmd.renderers.HTMLRenderer" toFile="foo.html"/>
+          <fileset dir="${basedir}/src">
+             <include name="java/lang/*.java"/>
+          </fileset>
+      </pmd>
+</target>-->
+   
+<!--<target name="checkstyle" description="Genereates a report of code convention Violation" depends="package">
+   <taskdef resource="checkstyletask.properties" classpath="C:\softwares\checkstyle-5.4\"/>
+     <checkstyle config="C:\softwares\checkstyle-5.4\sun_checks.xml"
+	 failureProperty="checkstyle.failure"
+	 failOnViolation="false">
+  <formatter type="xml" toFile="checkstyle_errors.xml"/>
+<fileset dir="src" includes="**/*.java"/>
+</checkstyle>
+   </target>-->
+
+  <taskdef uri="antlib:org.sonar.ant" resource="org/sonar/ant/antlib.xml">
+    <classpath path="C:\softwares\apache-ant-1.8.2\lib" />
+  </taskdef>
+  
+  <!-- Add the target -->
+  <target name="sonar" depends="package">
+    <!-- The workDir directory is used by Sonar to store temporary files -->
+    <sonar:sonar workDir="C:\softwares\sonar-2.8\lib" key="org.example:example"  xmlns:sonar="antlib:org.sonar.ant">
+ 
+      <!-- source directories (required) -->
+      <sources>
+        <path location="${basedir}/src" />
+      </sources>
+ 
+      <!-- list of properties (optional) -->
+      <property key="sonar.projectName" value="this value overrides the name defined in Ant root node" />
+      <property key="sonar.dynamicAnalysis" value="false" />
+ 
+      <!-- test source directories (optional) -->
+      <tests>
+        <path location="C:\Users\Peddi\Desktop\DCGeneratorNew\build" />
+      </tests>
+ 
+      <!-- binaries directories, which contain for example the compiled Java bytecode (optional) -->
+      <binaries>
+        <path location="C:\softwares\sonar-2.8\bin" />
+      </binaries>
+ 
+      <!-- path to libraries (optional). These libraries are for example used by the Java Findbugs plugin -->
+      <libraries>
+        <path location="C:\softwares\sonar-2.8\lib" />
+      </libraries>
+    </sonar:sonar>
+  </target>
+    <target name="init">
+        <tstamp/>
+    </target>
+
+    <target name="clean" description="Deletes the Web Application's war directory and web archive file">
+        <echo message="Deleting ${app.name}'s war directory and web archive file ..."/>
+        <delete dir="${basedir}/war"/>
+        <delete file="${basedir}/${app.name}.war"/>
+    </target>
+
+    <target name="prepare" description="Creates the Web Application's war directory" depends="clean,init">
+        <echo message="Creating ${app.name}'s war directory ..."/>
+        <mkdir dir="${basedir}/war"/>
+        <mkdir dir="${basedir}/war/WEB-INF"/>
+        <mkdir dir="${basedir}/war/WEB-INF/classes"/>
+        <mkdir dir="${basedir}/war/WEB-INF/lib"/>
+    </target>
+
+    <target name="build" description="Builds the Web Application" depends="prepare">
+        <echo message="Building ${app.name} ..."/>
+        <javac srcdir="${basedir}/src" destdir="${basedir}/war/WEB-INF/classes">
+            <include name="**/*.java"/>
+            <classpath refid="classpath"/> 
+        </javac>
+        <copy todir="${basedir}/war/WEB-INF">
+            <fileset dir="${basedir}/web/WEB-INF">
+                <include name="web.xml"/>
+            </fileset>
+        </copy>
+        <copy todir="${basedir}/war">
+            <fileset dir="${basedir}/web">
+                <include name="**/*.*"/>               
+            </fileset>
+        </copy>
+        <copy todir="${basedir}/war/META-INF">
+            <fileset dir=".">
+                <include name="context.xml" />
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="package" description="Packages the Web Application's web archive file" depends="build">
+        <echo message="Packaging ${app.name}'s web archive file ..."/>
+        <delete file="${basedir}/${app.name}.war"/>
+        <jar jarfile="${basedir}/${app.name}.war">
+            <fileset dir="${basedir}/war" includes="**"/>
+        </jar>
+		<delete dir="${basedir}/war"/>
+    </target>    
+
+</project>
